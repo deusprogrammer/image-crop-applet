@@ -86,12 +86,27 @@ public class ImageEditApplet extends JApplet implements MouseListener, MouseMoti
         g.drawImage(offscreen, 0, 0, null);
     }
     
-    @Override
-    public void update(Graphics g) {
-    }
-    
     // Receive outside data
     public void receiveData(String data) {
+        if (data.equals("save")) {
+            this.saveImage();
+        } else if (data.equals("close")) {
+        }
+    }
+    
+    public void saveImage() {
+        // Get cropped image
+        croppedImage = image.getSubimage((int)(cropRectangle.x),  (int)(cropRectangle.y), (int)(cropRectangle.width * cropRectangleScale),  (int)(cropRectangle.height * cropRectangleScale));
+
+        // Scale cropped image back down to original size.
+        scaledImage.getGraphics().drawImage(croppedImage, 0, 0, cropWidth, cropHeight, null);
+
+        // Write cropped image
+        try {
+            ImageIO.write(scaledImage, "png", new File("output.png"));
+        } catch (IOException ex) {
+            Logger.getLogger(ImageEditApplet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -136,20 +151,8 @@ public class ImageEditApplet extends JApplet implements MouseListener, MouseMoti
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
             case 10:
-                // Save cropped image
-                
-                // Get cropped image
-                croppedImage = image.getSubimage((int)(cropRectangle.x),  (int)(cropRectangle.y), (int)(cropRectangle.width * cropRectangleScale),  (int)(cropRectangle.height * cropRectangleScale));
-                
-                // Scale cropped image back down to original size.
-                scaledImage.getGraphics().drawImage(croppedImage, 0, 0, cropWidth, cropHeight, null);
-                
-                // Write cropped image
-                try {
-                    ImageIO.write(scaledImage, "png", new File("output.png"));
-                } catch (IOException ex) {
-                    Logger.getLogger(ImageEditApplet.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                // Save image
+                this.saveImage();
                 JOptionPane.showMessageDialog(this, "Cropped image saved!");
                 break;
             case 61:
