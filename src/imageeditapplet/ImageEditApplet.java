@@ -86,14 +86,6 @@ public class ImageEditApplet extends JApplet implements MouseListener, MouseMoti
         g.drawImage(offscreen, 0, 0, null);
     }
     
-    // Receive outside data
-    public void receiveData(String data) {
-        if (data.equals("save")) {
-            this.saveImage();
-        } else if (data.equals("close")) {
-        }
-    }
-    
     public void saveImage() {
         // Get cropped image
         croppedImage = image.getSubimage((int)(cropRectangle.x),  (int)(cropRectangle.y), (int)(cropRectangle.width * cropRectangleScale),  (int)(cropRectangle.height * cropRectangleScale));
