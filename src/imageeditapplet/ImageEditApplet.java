@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JApplet;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -34,8 +35,10 @@ public class ImageEditApplet extends JApplet implements MouseListener, MouseMoti
     protected BufferedImage image;
     protected BufferedImage offscreen;
     protected BufferedImage croppedImage;
+    protected BufferedImage scaledImage;
     protected Graphics2D bufferGraphics; 
     protected Rectangle cropRectangle;
+    protected Double cropRectangleScale = 1.0;
     protected Boolean cropFreeze = false;
     
     @Override
@@ -61,7 +64,7 @@ public class ImageEditApplet extends JApplet implements MouseListener, MouseMoti
         resize(image.getWidth(), image.getHeight());
         
         dim = new Dimension(image.getWidth(), image.getHeight());
-        croppedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        scaledImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
         offscreen = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
         bufferGraphics = offscreen.createGraphics();
         
@@ -77,7 +80,7 @@ public class ImageEditApplet extends JApplet implements MouseListener, MouseMoti
         
         // Draw the cropping square to buffer
         bufferGraphics.setColor(Color.red);
-        bufferGraphics.draw(cropRectangle);
+        bufferGraphics.drawRect((int)(cropRectangle.x),  (int)(cropRectangle.y), (int)(cropRectangle.width * cropRectangleScale),  (int)(cropRectangle.height * cropRectangleScale));
         
         // Draw the buffer
         g.drawImage(offscreen, 0, 0, null);
@@ -133,19 +136,31 @@ public class ImageEditApplet extends JApplet implements MouseListener, MouseMoti
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
             case 10:
-                // Save cropped
-                croppedImage = image.getSubimage((int)cropRectangle.getX(), (int)cropRectangle.getY(), (int)cropRectangle.getWidth(), (int)cropRectangle.getHeight());
+                // Save cropped image
+                
+                // Get cropped image
+                croppedImage = image.getSubimage((int)(cropRectangle.x),  (int)(cropRectangle.y), (int)(cropRectangle.width * cropRectangleScale),  (int)(cropRectangle.height * cropRectangleScale));
+                
+                // Scale cropped image back down to original size.
+                scaledImage.getGraphics().drawImage(croppedImage, 0, 0, cropWidth, cropHeight, null);
+                
+                // Write cropped image
                 try {
-                    ImageIO.write(croppedImage, "png", new File("output.png"));
+                    ImageIO.write(scaledImage, "png", new File("output.png"));
                 } catch (IOException ex) {
                     Logger.getLogger(ImageEditApplet.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                JOptionPane.showMessageDialog(this, "Cropped image saved!");
                 break;
             case 61:
                 // Zoom in
+                cropRectangleScale += 0.05;
+                repaint();
                 break;
             case 45:
                 // Zoom out
+                cropRectangleScale -= 0.05;
+                repaint();
                 break;
             default:
                 System.out.println("CODE: " + e.getKeyCode());
