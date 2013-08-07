@@ -17,6 +17,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -28,7 +29,7 @@ import javax.swing.JOptionPane;
  * @author mich4570
  */
 public class ImageEditApplet extends JApplet implements MouseListener, MouseMotionListener, KeyListener {
-    protected String imageFile = "C:/Users/mich4570/Desktop/woody.jpg";
+    protected String imageFile;
     protected Integer cropWidth = 327;
     protected Integer cropHeight = 477;
     protected Dimension dim;
@@ -43,11 +44,9 @@ public class ImageEditApplet extends JApplet implements MouseListener, MouseMoti
     
     @Override
     public void init() {
-        /*
         imageFile = getParameter("image-file");
         cropWidth = Integer.parseInt(getParameter("crop-width"));
         cropHeight = Integer.parseInt(getParameter("crop-height"));
-        */
         
         System.out.println("IMAGE:  " + imageFile);
         System.out.println("CROP-W: " + cropWidth);
@@ -56,7 +55,7 @@ public class ImageEditApplet extends JApplet implements MouseListener, MouseMoti
         cropRectangle = new Rectangle(0, 0, cropWidth, cropHeight);
         
         try {
-            image = ImageIO.read(new File(imageFile));
+            image = ImageIO.read(new URL(imageFile));
         } catch (IOException ex) {
             Logger.getLogger(ImageEditApplet.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -99,6 +98,10 @@ public class ImageEditApplet extends JApplet implements MouseListener, MouseMoti
         } catch (IOException ex) {
             Logger.getLogger(ImageEditApplet.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public String getJson() {
+        return "{'x': " + cropRectangle.x + ", 'y': " + cropRectangle.y + ", 'width': " + (int)(cropRectangle.width * cropRectangleScale) + ", 'height': " + (int)(cropRectangle.height * cropRectangleScale) + "}";
     }
 
     @Override
@@ -144,6 +147,7 @@ public class ImageEditApplet extends JApplet implements MouseListener, MouseMoti
         switch (e.getKeyCode()) {
             case 10:
                 // Save image
+                System.out.println("JSON: " + this.getJson());
                 this.saveImage();
                 JOptionPane.showMessageDialog(this, "Cropped image saved!");
                 break;
